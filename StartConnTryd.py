@@ -1,0 +1,55 @@
+import socket
+import TypeDataTryd as tdt
+from TimesAndTrades.OutputTimesTrades import OutputTimesTrades
+
+
+#---ESCOLHER O ATIVO EXEMPLO:-----------#
+# PETR4  - Petrobras
+# VALE3  - Vale
+# ITUB4  - Itau
+# INDQ19 - Indice Bovespa
+# WINQ19 - Mini Indice Bovespa
+#========================================#
+ATIVO = 'DOLV21'
+#========================================#
+
+#---INFORMACOES DO SERVIDOR--------------#
+#========================================#
+HOST = '127.0.0.1'
+PORT = 12002
+#========================================#
+
+#---OPCAO DE COTACAO---------------------#
+#========================================#
+
+#========================================#
+
+def ByteConvert(dataInfo):
+    return str.encode(dataInfo + ATIVO + '#')
+
+#Inicia a Execução
+ott = OutputTimesTrades()
+try:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        data = b''
+        while True:
+            try:
+                s.sendall(ByteConvert(tdt.NEGOCIO_COMPLETO) )
+                
+                # Evita perdas de negócios quando a transmissão pelo socket ultrapassa 8192 caracteres 
+                # ------------------------------------------------------------------------------------
+                chunk = s.recv(8192)
+                if len(chunk) >= 8192:
+                    data = data + chunk
+                else:
+                    data = data + chunk
+                    ott.OutputData(data.decode())
+                    data = b''
+               # --------------------------------------------------------------------------------------
+            
+            except Exception as ex:
+                print(ex)
+            
+except Exception as ex:
+    print('Não foi possivel conectar no servidor RTD. Erro: ', ex)
